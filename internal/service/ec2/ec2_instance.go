@@ -188,6 +188,12 @@ func resourceInstance() *schema.Resource {
 							Computed: true,
 							ForceNew: true,
 						},
+                                                "nested_virtualization": {
+                                                        Type:     schema.TypeString,
+                                                        Optional: true,
+                                                        ValidateFunc: validation.StringInSlice([]string{"enabled", "disabled"}, false),
+                                                        ForceNew: true,
+                                                },
 					},
 				},
 			},
@@ -3604,6 +3610,10 @@ func expandCPUOptions(l []any) *awstypes.CpuOptionsRequest {
 		opts.ThreadsPerCore = aws.Int32(int32(tc))
 	}
 
+        if v, ok := m["nested_virtualization"].(string); ok && v != "" {
+                opts.NestedVirtualization = awstypes.NestedVirtualizationState(v)
+        }
+
 	return opts
 }
 
@@ -3666,6 +3676,10 @@ func flattenCPUOptions(opts *awstypes.CpuOptions) []any {
 	if v := opts.ThreadsPerCore; v != nil {
 		m["threads_per_core"] = aws.ToInt32(v)
 	}
+
+        if opts.NestedVirtualization != "" {
+                m["nested_virtualization"] = string(opts.NestedVirtualization)
+        }
 
 	return []any{m}
 }
